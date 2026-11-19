@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1000" viewBox="0 0 1400 1000" font-family="DejaVu Sans, Arial, sans-serif" xmlns:c2pa="http://c2pa.org/manifest">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#334155"/></marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#b45309"/></marker>
+    <style>
+      .t{font-size:15px;fill:#0f172a}.s{font-size:12.5px;fill:#334155}.h{font-size:16px;font-weight:bold;fill:#1e3a8a}
+      .lbl{font-size:12px;fill:#475569;font-style:italic;stroke:#f8fafc;stroke-width:6px;paint-order:stroke;stroke-linejoin:round}.tier{font-size:13px;font-weight:bold;fill:#64748b}
+    </style>
+  </defs>
+  <rect width="1400" height="1000" fill="#ffffff"/>
+  <text x="700" y="34" text-anchor="middle" style="font-size:22px;font-weight:bold;fill:#0f172a">Architecture cible — environnement dev (us-east-1)</text>
+
+  <!-- Internet -->
+  <ellipse cx="560" cy="90" rx="105" ry="30" fill="#e0f2fe" stroke="#0369a1" stroke-width="1.5"/>
+  <text x="560" y="96" text-anchor="middle" class="t">Utilisateurs (Internet)</text>
+  <rect x="470" y="150" width="180" height="44" rx="10" fill="#fef9c3" stroke="#a16207" stroke-width="1.5"/>
+  <text x="560" y="177" text-anchor="middle" class="t">Internet Gateway</text>
+  <line x1="560" y1="120" x2="560" y2="148" stroke="#334155" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="572" y="140" class="lbl">HTTP :80</text>
+
+  <!-- VPC -->
+  <rect x="40" y="215" width="1060" height="720" rx="16" fill="#f8fafc" stroke="#1e3a8a" stroke-width="2.2"/>
+  <text x="60" y="243" class="h">VPC cloud5-dev-vpc — 10.20.0.0/16</text>
+
+  <!-- AZ columns -->
+  <rect x="150" y="265" width="420" height="650" rx="12" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="360" y="289" text-anchor="middle" class="tier">AZ us-east-1a</text>
+  <rect x="590" y="265" width="420" height="650" rx="12" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="800" y="289" text-anchor="middle" class="tier">AZ us-east-1b</text>
+
+  <!-- tier labels -->
+  <text x="95" y="360" text-anchor="middle" class="tier">Public</text>
+  <text x="95" y="600" text-anchor="middle" class="tier">App</text>
+  <text x="95" y="615" text-anchor="middle" class="tier" style="font-weight:normal;font-size:11px">(privé)</text>
+  <text x="95" y="830" text-anchor="middle" class="tier">DB</text>
+  <text x="95" y="845" text-anchor="middle" class="tier" style="font-weight:normal;font-size:11px">(isolé)</text>
+
+  <!-- Public tier -->
+  <rect x="170" y="305" width="380" height="135" rx="10" fill="#dcfce7" stroke="#15803d"/>
+  <text x="185" y="326" class="s">Public A — 10.20.1.0/24</text>
+  <rect x="610" y="305" width="380" height="135" rx="10" fill="#dcfce7" stroke="#15803d"/>
+  <text x="625" y="326" class="s">Public B — 10.20.2.0/24</text>
+  <rect x="300" y="345" width="560" height="52" rx="10" fill="#dbeafe" stroke="#1d4ed8" stroke-width="1.8"/>
+  <text x="580" y="368" text-anchor="middle" class="t" style="font-weight:bold">Application Load Balancer — cloud5-dev-alb</text>
+  <text x="580" y="388" text-anchor="middle" class="s">listener HTTP :80 · health check GET / · sg-alb</text>
+  <rect x="185" y="405" width="150" height="30" rx="8" fill="#fef9c3" stroke="#a16207"/>
+  <text x="260" y="425" text-anchor="middle" class="s">NAT Gateway + EIP</text>
+  <line x1="560" y1="194" x2="580" y2="343" stroke="#334155" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <!-- App tier + ASG -->
+  <rect x="160" y="490" width="840" height="200" rx="14" fill="#fff7ed" stroke="#c2410c" stroke-width="1.6" stroke-dasharray="9 5"/>
+  <text x="580" y="512" text-anchor="middle" class="s" style="fill:#9a3412;font-weight:bold;stroke:#fff7ed;stroke-width:6px;paint-order:stroke">Auto Scaling Group cloud5-dev-asg — min 2 / max 4 — health check ELB — politique CPU 50 %</text>
+  <rect x="170" y="525" width="380" height="150" rx="10" fill="#ffedd5" stroke="#c2410c"/>
+  <text x="185" y="546" class="s">App A — 10.20.11.0/24</text>
+  <rect x="235" y="565" width="250" height="88" rx="10" fill="#ffffff" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="360" y="592" text-anchor="middle" class="t">EC2 t3.micro</text>
+  <text x="360" y="612" text-anchor="middle" class="s">Amazon Linux 2023 + nginx</text>
+  <text x="360" y="632" text-anchor="middle" class="s">IMDSv2 · EBS chiffré · sg-app</text>
+  <rect x="610" y="525" width="380" height="150" rx="10" fill="#ffedd5" stroke="#c2410c"/>
+  <text x="625" y="546" class="s">App B — 10.20.12.0/24</text>
+  <rect x="675" y="565" width="250" height="88" rx="10" fill="#ffffff" stroke="#c2410c" stroke-width="1.5"/>
+  <text x="800" y="592" text-anchor="middle" class="t">EC2 t3.micro</text>
+  <text x="800" y="612" text-anchor="middle" class="s">Amazon Linux 2023 + nginx</text>
+  <text x="800" y="632" text-anchor="middle" class="s">IMDSv2 · EBS chiffré · sg-app</text>
+  <line x1="470" y1="398" x2="380" y2="563" stroke="#334155" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="690" y1="398" x2="780" y2="563" stroke="#334155" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="590" y="470" text-anchor="middle" class="lbl">sg-alb → sg-app :80 (répartition)</text>
+  <!-- egress -->
+  <path d="M250,565 L250,437" stroke="#b45309" stroke-width="1.5" stroke-dasharray="6 4" fill="none" marker-end="url(#g)"/>
+  <text x="262" y="478" class="lbl" style="fill:#b45309">sortie HTTPS (NAT)</text>
+
+  <!-- DB tier -->
+  <rect x="170" y="740" width="380" height="160" rx="10" fill="#fce7f3" stroke="#be185d"/>
+  <text x="185" y="761" class="s">DB A — 10.20.21.0/24 (aucune route Internet)</text>
+  <rect x="235" y="780" width="250" height="100" rx="10" fill="#ffffff" stroke="#be185d" stroke-width="1.5"/>
+  <text x="360" y="806" text-anchor="middle" class="t">RDS PostgreSQL 16</text>
+  <text x="360" y="826" text-anchor="middle" class="s">db.t3.micro · stockage chiffré</text>
+  <text x="360" y="846" text-anchor="middle" class="s">force_ssl · non public · sg-db</text>
+  <text x="360" y="866" text-anchor="middle" class="s">IP privée 10.20.21.241</text>
+  <rect x="610" y="740" width="380" height="160" rx="10" fill="#fce7f3" stroke="#be185d"/>
+  <text x="625" y="761" class="s">DB B — 10.20.22.0/24 (aucune route Internet)</text>
+  <text x="800" y="825" text-anchor="middle" class="s">Groupe de sous-réseaux RDS</text>
+  <text x="800" y="845" text-anchor="middle" class="s">(standby Multi-AZ en prod)</text>
+  <line x1="360" y1="655" x2="360" y2="778" stroke="#334155" stroke-width="1.6" marker-end="url(#a)"/>
+  <line x1="760" y1="655" x2="440" y2="778" stroke="#334155" stroke-width="1.6" marker-end="url(#a)"/>
+  <text x="575" y="722" text-anchor="middle" class="lbl">sg-app → sg-db :5432</text>
+
+  <!-- VPC endpoint -->
+  <rect x="1020" y="560" width="70" height="60" rx="8" fill="#f1f5f9" stroke="#475569"/>
+  <text x="1055" y="586" text-anchor="middle" class="s">VPCE</text>
+  <text x="1055" y="604" text-anchor="middle" class="s">S3</text>
+  <line x1="925" y1="600" x2="1018" y2="592" stroke="#475569" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#a)"/>
+
+  <!-- Outside services -->
+  <rect x="1140" y="250" width="230" height="110" rx="12" fill="#ede9fe" stroke="#6d28d9" stroke-width="1.6"/>
+  <text x="1255" y="278" text-anchor="middle" class="t" style="font-weight:bold">État Terraform</text>
+  <text x="1255" y="300" text-anchor="middle" class="s">S3 cloud5-tfstate-*</text>
+  <text x="1255" y="320" text-anchor="middle" class="s">versionné · AES256 · TLS</text>
+  <text x="1255" y="340" text-anchor="middle" class="s">verrou use_lockfile</text>
+
+  <rect x="1140" y="540" width="230" height="100" rx="12" fill="#f1f5f9" stroke="#475569" stroke-width="1.6"/>
+  <text x="1255" y="568" text-anchor="middle" class="t" style="font-weight:bold">Bucket projet</text>
+  <text x="1255" y="590" text-anchor="middle" class="s">S3 cloud5-dev-assets-*</text>
+  <text x="1255" y="610" text-anchor="middle" class="s">versionné · chiffré · privé</text>
+  <text x="1255" y="628" text-anchor="middle" class="s">(pile CloudFormation)</text>
+  <line x1="1090" y1="590" x2="1138" y2="590" stroke="#475569" stroke-width="1.3" stroke-dasharray="5 4" marker-end="url(#a)"/>
+
+  <rect x="1140" y="770" width="230" height="90" rx="12" fill="#f1f5f9" stroke="#475569" stroke-width="1.6"/>
+  <text x="1255" y="798" text-anchor="middle" class="t" style="font-weight:bold">Secrets Manager</text>
+  <text x="1255" y="820" text-anchor="middle" class="s">mot de passe RDS généré</text>
+  <text x="1255" y="840" text-anchor="middle" class="s">(jamais dans Git)</text>
+  <path d="M360,882 L360,926 L1115,926 L1115,815 L1138,815" stroke="#475569" stroke-width="1.2" stroke-dasharray="3 4" fill="none"/>
+
+  <rect x="1140" y="100" width="230" height="110" rx="12" fill="#ffffff" stroke="#0f172a" stroke-width="1.4"/>
+  <text x="1255" y="128" text-anchor="middle" class="t" style="font-weight:bold">Terraform</text>
+  <text x="1255" y="150" text-anchor="middle" class="s">poste admin (AWS CLI)</text>
+  <text x="1255" y="170" text-anchor="middle" class="s">init · validate · plan · apply</text>
+  <text x="1255" y="190" text-anchor="middle" class="s">modules + environnements</text>
+  <line x1="1255" y1="210" x2="1255" y2="248" stroke="#6d28d9" stroke-width="1.6" marker-end="url(#a)"/>
+
+  <text x="40" y="975" class="lbl">Flux : Internet → ALB (sous-réseaux publics) → instances (sous-réseaux app privés) → RDS (sous-réseaux DB isolés). Sortie des instances via NAT ; S3 via endpoint Gateway.</text>
+<metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTplNGFhZjViOS0zYTUxLTQ3NzctOWE3My1jZDA2Y2Q3ZWJmMTMAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaNZJmI8VU5RbEzkzvKJkn+8AAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDozNDNiMTdiZS02NWJmLTRjMGQtOGZiOS1lY2JmNjc5MWU2OWJscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNovryfIVAufafmawGdd3uHGgAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggH8ztykGZ5+Ca5tTHF4G1pl85Ffzga58fdKw55+esJxqkZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaE6obt1dj2Vr2Jqa5+bttQQAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRMAAAAAAAAAAAAAAAAZGhhc2hYIMY1yu7MkQ2NCIAq8TRp5WQ/BoByiWpDRoccyePl0AwrZG5hbWVuanVtYmYgbWFuaWZlc3RqZXhjbHVzaW9uc4GiZXN0YXJ0GSZmZmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOmU0YWFmNWI5LTNhNTEtNDc3Ny05YTczLWNkMDZjZDdlYmYxMy9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjI1ZjlhY2YyLWJkYmUtNGM1OS04M2E1LWRkMjdiMTUyMTk0NHJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCAfzO3KQZnn4Jrm1McXgbWmXzkV/OBrnx90rDnn56wnGqJjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggvurJgPQ/1NL9XfCGapX8GscJtWyicgxrZXrINHBv5UWiY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggIh3P+ESd7mTxNKFSig3oaCmSGPYr83sHtLpBrpjewuZ0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQPUnn7p25SnOD6I3miwFPcoZ1/HQpPSrcKQdEKQBi4wjUYItD30KSa9qSkjziLm6bdVbRK4jQiokSM+HIAYvQ1M=</c2pa:manifest></metadata></svg>
