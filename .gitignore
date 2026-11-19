@@ -21,3 +21,6 @@ bootstrap/terraform.tfvars
 
 # Test logs
 failover-*.log
+
+# Lock files only in root configs, not in reusable modules
+modules/**/.terraform.lock.hcl
