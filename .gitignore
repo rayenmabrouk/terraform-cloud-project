@@ -1,0 +1,23 @@
+﻿# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+plan.txt
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+.terraformrc
+terraform.rc
+
+# Local-only config / secrets
+backend.hcl
+bootstrap/terraform.tfvars
+*.secret.tfvars
+.env
+
+# Test logs
+failover-*.log
