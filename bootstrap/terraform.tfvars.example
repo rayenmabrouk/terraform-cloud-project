@@ -1,0 +1,4 @@
+# Copy to terraform.tfvars (git-ignored) and adjust.
+owner = "your-name"
+# project_name = "cloud5"
+# aws_region   = "us-east-1"
