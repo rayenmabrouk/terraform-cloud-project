@@ -427,20 +427,50 @@ vpc_id         = vpc-0e16f9ae72b4017a9
 
 ### C. Captures
 
-Les captures demandées (§26) sont rangées dans `docs/captures/` :
+Les captures demandées (§26) sont rangées dans `docs/captures/`.
 
-| Capture | Fichier |
-|---|---|
-| VPC et sous-réseaux | `01-vpc-subnets.png` |
-| Load Balancer et Target Group sain | `02-alb-target-group.png` |
-| Auto Scaling Group et instances | `03-asg.png` |
-| RDS dans les sous-réseaux privés | `04-rds.png` |
-| Backend distant | `05-backend.png` |
-| Page Web accessible | `07-page-web.png` |
-| Répartition | `08-repartition.png` |
-| Test de panne | `09-panne.png` |
-| Auto Scaling | `10-autoscaling.png` |
-| Sécurité de la base | `11-securite-db.png` |
-| Pipeline : Pull Request et contrôles | `12-pipeline.png` |
-| Pipeline : déploiement complet de prod | `13-pipeline-apply.png` |
-| Pipeline : approbation manuelle | `14-approbation.png` |
+| N° | Capture | Fichier |
+|---|---|---|
+| 01 | Bootstrap : bucket d'état créé et durci (6 ressources) | `01-bootstrap.png` |
+| 02 | Migration de l'état vers le backend S3 distant | `02-backend.png` |
+| 03 | Déploiement de dev : 40 ressources créées | `03-apply-dev.png` |
+| 04 | Target Group : les deux instances passent à *healthy* | `04-target-group-sain.png` |
+| 05 | Page Web servie par l'ALB | `05-page-web.png` |
+| 06 | Répartition de charge : 10 / 10 entre us-east-1a et us-east-1b | `06-repartition.png` |
+| 07 | Test de panne : instance terminée puis remplacée automatiquement | `07-panne.png` |
+| 08 | Auto Scaling : passage de 2 à 3 instances InService | `08-autoscaling.png` |
+| 09 | Sécurité de la base : IP privée, port 5432 injoignable, non publique, chiffrée | `09-securite-db.png` |
+| 10 | Destruction de dev : 40 ressources supprimées | `10-destroy-dev.png` |
+| 11 | Pipeline : Pull Request et contrôles automatiques | `11-pipeline-pr.png` |
+| 12 | Pipeline : approbation manuelle avant déploiement de prod | `12-approbation.png` |
+| 13 | Pipeline : application du plan relu en prod | `13-pipeline-apply.png` |
+| 14 | Pipeline : exécution réussie (23 min 21 s) | `14-pipeline-succes.png` |
+
+<div class="cap"><img src="captures/01-bootstrap.png" alt="01-bootstrap"><p><strong>Capture 01</strong> — Bootstrap : bucket d'état créé et durci (6 ressources)</p></div>
+
+<div class="cap"><img src="captures/02-backend.png" alt="02-backend"><p><strong>Capture 02</strong> — Migration de l'état vers le backend S3 distant</p></div>
+
+<div class="cap"><img src="captures/03-apply-dev.png" alt="03-apply-dev"><p><strong>Capture 03</strong> — Déploiement de dev : 40 ressources créées</p></div>
+
+<div class="cap"><img src="captures/04-target-group-sain.png" alt="04-target-group-sain"><p><strong>Capture 04</strong> — Target Group : les deux instances passent à *healthy*</p></div>
+
+<div class="cap"><img src="captures/05-page-web.png" alt="05-page-web"><p><strong>Capture 05</strong> — Page Web servie par l'ALB</p></div>
+
+<div class="cap"><img src="captures/06-repartition.png" alt="06-repartition"><p><strong>Capture 06</strong> — Répartition de charge : 10 / 10 entre us-east-1a et us-east-1b</p></div>
+
+<div class="cap"><img src="captures/07-panne.png" alt="07-panne"><p><strong>Capture 07</strong> — Test de panne : instance terminée puis remplacée automatiquement</p></div>
+
+<div class="cap"><img src="captures/08-autoscaling.png" alt="08-autoscaling"><p><strong>Capture 08</strong> — Auto Scaling : passage de 2 à 3 instances InService</p></div>
+
+<div class="cap"><img src="captures/09-securite-db.png" alt="09-securite-db"><p><strong>Capture 09</strong> — Sécurité de la base : IP privée, port 5432 injoignable, non publique, chiffrée</p></div>
+
+<div class="cap"><img src="captures/10-destroy-dev.png" alt="10-destroy-dev"><p><strong>Capture 10</strong> — Destruction de dev : 40 ressources supprimées</p></div>
+
+<div class="cap"><img src="captures/11-pipeline-pr.png" alt="11-pipeline-pr"><p><strong>Capture 11</strong> — Pipeline : Pull Request et contrôles automatiques</p></div>
+
+<div class="cap"><img src="captures/12-approbation.png" alt="12-approbation"><p><strong>Capture 12</strong> — Pipeline : approbation manuelle avant déploiement de prod</p></div>
+
+<div class="cap"><img src="captures/13-pipeline-apply.png" alt="13-pipeline-apply"><p><strong>Capture 13</strong> — Pipeline : application du plan relu en prod</p></div>
+
+<div class="cap"><img src="captures/14-pipeline-succes.png" alt="14-pipeline-succes"><p><strong>Capture 14</strong> — Pipeline : exécution réussie (23 min 21 s)</p></div>
+
