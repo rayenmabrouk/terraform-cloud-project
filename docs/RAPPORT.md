@@ -21,12 +21,13 @@
 6. Modules Terraform
 7. Environnements
 8. Choix de sécurité
-9. Tests et résultats
-10. Estimation des coûts
-11. Difficultés rencontrées et solutions
-12. Travaux restants
-13. Conclusion
-14. Annexes
+9. Pipeline CI/CD
+10. Tests et résultats
+11. Estimation des coûts
+12. Difficultés rencontrées et solutions
+13. Améliorations possibles
+14. Conclusion
+15. Annexes
 
 ---
 
@@ -54,10 +55,10 @@ Le projet a été réalisé sur un compte **AWS Academy Learner Lab**. Cet envir
 | Régions limitées | `eu-west-3` (exemple de l'énoncé) indisponible | Déploiement en `us-east-1` |
 | Création de rôles IAM interdite | Pas de rôle dédié aux instances ni de fournisseur OIDC | Profil existant `LabInstanceProfile` |
 | SCP bloquant `s3:GetBucketObjectLockConfiguration` | La ressource `aws_s3_bucket` échoue à la lecture | Contournement décrit en section 5 et 6.3 |
-| Identifiants temporaires (session de 4 h) | Les clés changent à chaque session | Aucun identifiant dans le code ; configuration locale de l'AWS CLI |
+| Identifiants temporaires (session de 4 h) | Les clés changent à chaque session | Aucun identifiant dans le code ; AWS CLI configurée localement ; GitHub Secrets chiffrés pour le pipeline, mis à jour par script |
 | Budget de 50 USD | Les ressources payantes consomment le budget | Environnement détruit après chaque démonstration |
 
-Outils utilisés : Terraform 1.16.2, fournisseur `hashicorp/aws` 5.100.0, AWS CLI 2.37, Git et PowerShell sous Windows 11.
+Outils utilisés : Terraform 1.16.2, fournisseur `hashicorp/aws` 5.100.0, AWS CLI 2.37, Git, GitHub CLI, GitHub Actions et PowerShell sous Windows 11.
 
 ## 3. Architecture
 
@@ -111,6 +112,8 @@ Les sous-réseaux sont calculés automatiquement à partir du CIDR du VPC avec l
 
 ```
 terraform-cloud-project/
+├── .github/workflows/
+│   └── terraform.yml       # pipeline CI/CD (GitHub Actions)
 ├── bootstrap/              # création du bucket d'état (état local puis migré)
 ├── modules/
 │   ├── network/            # VPC, sous-réseaux, IGW, NAT, routage, endpoint S3
@@ -123,6 +126,8 @@ terraform-cloud-project/
 │   ├── dev/                # environnement déployé et testé
 │   ├── test/
 │   └── prod/
+├── scripts/
+│   └── set-github-secrets.ps1   # copie les identifiants du lab dans GitHub Secrets
 ├── docs/                   # rapport, schéma, captures
 ├── .gitignore
 └── .gitattributes
@@ -223,7 +228,7 @@ Bucket S3 privé du projet : versioning, chiffrement AES256, blocage public, ACL
 
 Chaque environnement possède son propre dossier, ses variables et son propre état ; les modules restent communs. Les différences de capacité passent uniquement par des variables.
 
-| Paramètre | dev (déployé) | test (prévu) | prod (prévu) |
+| Paramètre | dev | test | prod |
 |---|---|---|---|
 | Clé d'état | `dev/terraform.tfstate` | `test/terraform.tfstate` | `prod/terraform.tfstate` |
 | CIDR VPC | 10.20.0.0/16 | 10.30.0.0/16 | 10.40.0.0/16 |
@@ -231,9 +236,10 @@ Chaque environnement possède son propre dossier, ses variables et son propre é
 | Instances | t3.micro, 2 à 4 | t3.micro, 2 à 4 | t3.small, 2 à 6 |
 | RDS | db.t3.micro, mono-AZ | db.t3.micro, mono-AZ | db.t3.small, Multi-AZ |
 | Protection suppression | non | non | oui |
-| Déploiement | manuel, après plan | après revue | validation manuelle obligatoire |
+| Approbation avant apply | non | oui (GitHub Environment) | oui (GitHub Environment) |
+| Ressources planifiées | 40 | 40 | 42 (2 NAT + 2 EIP) |
 
-L'environnement **dev** a été entièrement déployé et testé. Les dossiers `test` et `prod` sont créés ; leur configuration (même code que dev, avec les valeurs ci-dessus) reste à réaliser.
+Les trois environnements partagent exactement le même code ; seuls `terraform.tfvars` et la clé d'état diffèrent. **dev** a été déployé et testé manuellement ; **prod** a été déployé de bout en bout par le pipeline CI/CD avec approbation, puis détruit ; **test** est validé et planifié par le pipeline. La différence de 42 ressources en prod (contre 40) illustre bien l'effet des variables : `nat_mode = "per_az"` crée une NAT Gateway et une Elastic IP par zone.
 
 ## 8. Choix de sécurité
 
@@ -254,7 +260,41 @@ L'environnement **dev** a été entièrement déployé et testé. Les dossiers `
 
 **Limites connues** : HTTP seul en dev, faute de certificat ACM dans le lab (HTTPS activable par variable) ; profil IAM du lab plus large que nécessaire, à remplacer par un rôle dédié hors Learner Lab.
 
-## 9. Tests et résultats
+## 9. Pipeline CI/CD
+
+### 9.1 Principe
+
+Le pipeline est un workflow **GitHub Actions** (`.github/workflows/terraform.yml`). Aucune modification n'atteint AWS sans être formatée, validée, planifiée, relue et approuvée.
+
+| Déclencheur | Étapes |
+|---|---|
+| Pull Request vers `main` | `terraform fmt -check`, `terraform validate` (bootstrap + 3 environnements), contrôle qu'aucun état ni secret n'est suivi par Git, puis `plan` pour dev, test et prod ; chaque plan est publié en commentaire de la PR |
+| Push sur `main` | mêmes contrôles et mêmes plans |
+| Lancement manuel (`workflow_dispatch`) | `plan` de l'environnement choisi, puis `apply` ou `destroy` **du plan exact relu**, après approbation dans le GitHub Environment |
+
+### 9.2 Garde-fous
+
+- **Validation manuelle** : les GitHub Environments `test` et `prod` exigent l'approbation d'un relecteur avant tout `apply` ; `dev` est libre.
+- **Plan relu = plan appliqué** : le fichier `tfplan` produit par le job `plan` est transmis comme artefact au job `apply`, qui applique ce fichier et rien d'autre.
+- **Branche protégée** : `apply` et `destroy` ne sont autorisés que depuis `main`.
+- **Production protégée** : la destruction de prod par le pipeline est refusée ; la base de prod a en plus une protection contre la suppression.
+- **Un déploiement à la fois** par environnement (`concurrency`) et verrou d'état S3.
+
+### 9.3 Gestion des secrets du pipeline
+
+L'identité fédérée (OIDC) recommandée par l'énoncé suppose de créer un fournisseur d'identité et un rôle IAM, ce que le Learner Lab interdit. Conformément à l'alternative prévue (« stocker les secrets dans le coffre sécurisé de la plateforme CI/CD »), les identifiants temporaires du lab sont stockés dans les **GitHub Secrets** chiffrés (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_SESSION_TOKEN`). Ils n'apparaissent ni dans le code ni dans les journaux. Le script `scripts/set-github-secrets.ps1` les met à jour en une commande à chaque nouvelle session de lab.
+
+### 9.4 Exécutions réalisées
+
+| Exécution | Résultat |
+|---|---|
+| PR #1 `feat/ci-pipeline` → `main` | Contrôles déclenchés automatiquement ; `fmt + validate` réussi en 43 s ; plans des trois environnements lancés |
+| Run #3, manuel, `prod` / `apply` | `fmt + validate` ✅ → `plan (prod)` ✅ `Plan: 42 to add` → **attente d'approbation** (« Review pending deployments ») → approuvé → `apply (prod)` ✅ en 18 min 23 s (durée totale 23 min 21 s) |
+| Destruction de prod | Réalisée depuis le poste admin (le pipeline la refuse) : désactivation de la protection de la base, puis `terraform destroy` → `Destroy complete! Resources: 42 destroyed.` |
+
+La durée de l'apply de prod s'explique par la base **Multi-AZ** : AWS crée l'instance principale puis une réplique synchrone dans la seconde zone avant de la déclarer disponible.
+
+## 10. Tests et résultats
 
 L'environnement dev a été déployé le 19 novembre 2026 : `Apply complete! Resources: 40 added, 0 changed, 0 destroyed.` (durée ≈ 12 min, dont 9 min 17 s pour RDS).
 
@@ -268,9 +308,10 @@ L'environnement dev a été déployé le 19 novembre 2026 : `Apply complete! Res
 | Panne | Arrêt d'une instance, sondage toutes les 2 s pendant 4 min | Service disponible | ✅ 100/104 requêtes servies (≈ 96 %) ; échecs limités à la fenêtre de détection ; remplacement automatique |
 | Auto Scaling | Capacité souhaitée 2 → 3 | Nombre adapté | ✅ 3 instances *InService* en ≈ 35 s, puis retour à 2 |
 | Sécurité DB | Résolution DNS + connexion TCP 5432 depuis Internet | Accès refusé | ✅ IP privée 10.20.21.241 ; `TcpTestSucceeded : False` ; `Public : false`, `Encrypted : true` |
-| Destruction | `terraform destroy` | Ressources supprimées | ⏳ À exécuter en fin de démonstration |
+| Destruction | `terraform destroy` | Ressources supprimées | ✅ `Destroy complete! Resources: 40 destroyed.` (RDS supprimée en 1 min 52 s) |
+| Pipeline CI/CD | PR + déploiement manuel de prod | Contrôles automatiques, approbation | ✅ fmt/validate/plan automatiques ; prod déployée après approbation (42 ressources) puis détruite |
 
-### 9.1 Détail du test de panne
+### 10.1 Détail du test de panne
 
 L'instance `i-02de581134b821099` (us-east-1a) a été arrêtée. Historique de l'Auto Scaling Group :
 
@@ -281,7 +322,7 @@ L'instance `i-02de581134b821099` (us-east-1a) a été arrêtée. Historique de l
 
 L'ASG a remplacé l'instance défaillante **2 secondes** après l'avoir déclarée *unhealthy*, dans la même zone. Pendant la fenêtre de détection (≈ 30 s), une partie des requêtes dirigées vers l'instance arrêtée a échoué ; le reste du trafic a été servi par l'instance de us-east-1b. Amélioration possible : un intervalle de health check de 5 s réduirait cette fenêtre à ≈ 10 s.
 
-### 9.2 Détail du test de sécurité de la base
+### 10.2 Détail du test de sécurité de la base
 
 ```
 Resolve-DnsName cloud5-dev-db...rds.amazonaws.com   -> 10.20.21.241 (sous-réseau DB A)
@@ -291,7 +332,7 @@ aws rds describe-db-instances                       -> Public : false, Encrypted
 
 La base n'est joignable que depuis le niveau applicatif, ce que confirme la page de démonstration (« Database : reachable from the app tier »).
 
-## 10. Estimation des coûts
+## 11. Estimation des coûts
 
 Ressources générant des coûts et estimation pour l'environnement dev fonctionnant en continu (tarifs à la demande `us-east-1`, ordre de grandeur, à confirmer avec AWS Pricing Calculator) :
 
@@ -312,7 +353,7 @@ Une session de démonstration de 2 heures coûte donc environ 0,25 $. La NAT Gat
 
 Pour la cible prod (NAT par zone, 2 × t3.small, RDS db.t3.small Multi-AZ), l'estimation est d'environ 215 $/mois, le poste principal étant les deux NAT Gateways.
 
-## 11. Difficultés rencontrées et solutions
+## 12. Difficultés rencontrées et solutions
 
 | Difficulté | Cause | Solution |
 |---|---|---|
@@ -322,22 +363,29 @@ Pour la cible prod (NAT par zone, 2 × t3.small, RDS db.t3.small Multi-AZ), l'es
 | Pas de rôle IAM ni d'OIDC | Restriction du Learner Lab | `LabInstanceProfile` ; limite documentée |
 | Site injoignable dans le navigateur alors que les cibles étaient saines | Le navigateur (Brave) forçait HTTPS, non exposé en dev | Test validé avec `curl` puis dans un autre navigateur en `http://` |
 | Cibles *unhealthy* juste après l'apply | Instances en cours de démarrage et d'installation de nginx | Attente de 2 à 3 minutes ; cibles *healthy* |
+| Pas d'OIDC pour GitHub Actions | Création de rôles IAM interdite | GitHub Secrets chiffrés + script de mise à jour à chaque session |
+| `fmt -check` en échec sur test et prod | Fichiers copiés par PowerShell avec un encodage Windows | `terraform fmt -recursive` avant commit ; le pipeline bloque désormais ce cas |
+| Destruction de prod bloquée | Protection contre la suppression de la base (voulue) | Désactivation explicite de la protection, puis `destroy` depuis le poste admin |
 
-## 12. Travaux restants
+## 13. Améliorations possibles
 
-- **Pipeline CI/CD (§19)** : workflow GitHub Actions exécutant `fmt -check`, `init`, `validate` et `plan` à chaque Pull Request, publiant le plan, et soumettant `apply` à validation manuelle pour test et prod. Dans le Learner Lab, l'authentification se fera par des secrets GitHub (identifiants temporaires du lab), l'identité fédérée OIDC n'étant pas disponible.
-- **Environnements test et prod** : déclinaison de la configuration dev avec les valeurs de la section 7.
-- **Test de destruction** et capture associée.
+- **Identité fédérée OIDC** pour GitHub Actions et rôles IAM dédiés au moindre privilège, hors Learner Lab.
+- **HTTPS** avec un certificat ACM (déjà prévu par la variable `certificate_arn`).
+- **Health check plus rapide** (intervalle de 5 s) pour réduire la fenêtre de détection d'une panne de ~30 s à ~10 s.
+- **Analyse de sécurité statique** du code (tfsec / Trivy) dans le pipeline.
+- **Application réelle** utilisant la base de données : seul le script `user_data` du module compute serait à modifier.
 
-## 13. Conclusion
+## 14. Conclusion
 
 Le projet a permis de construire une infrastructure Web hautement disponible entièrement décrite en code : six modules réutilisables, un état distant chiffré, versionné et verrouillé, et un environnement dev reproductible déployé en une seule commande (40 ressources).
 
-Les tests obligatoires réalisés ont tous été validés : accès Web, répartition équilibrée sur deux zones, continuité de service et remplacement automatique après une panne, adaptation de la capacité, et isolement de la base de données vis-à-vis d'Internet.
+Les neuf tests obligatoires ont tous été validés : format, validation, plan, accès Web, répartition équilibrée sur deux zones, continuité de service et remplacement automatique après une panne, adaptation de la capacité, isolement de la base de données vis-à-vis d'Internet, et destruction complète des 40 ressources.
 
-Les contraintes du Learner Lab (région, IAM, SCP sur S3) ont imposé des adaptations, toutes documentées, sans renoncer à l'approche « tout en code ». Les prochaines étapes sont le pipeline CI/CD et les environnements test et prod.
+Le pipeline CI/CD GitHub Actions garantit que chaque modification est formatée, validée et planifiée automatiquement, et que les déploiements de test et de prod n'ont lieu qu'après une approbation explicite. Il a été démontré de bout en bout par le déploiement complet de la production (42 ressources), suivi de sa destruction.
 
-## 14. Annexes
+Les contraintes du Learner Lab (région, IAM, SCP sur S3, identifiants temporaires) ont imposé des adaptations, toutes documentées, sans renoncer à l'approche « tout en code ».
+
+## 15. Annexes
 
 ### A. Commandes de déploiement
 
@@ -360,6 +408,10 @@ terraform apply tfplan
 
 # 3. Destruction en fin de démonstration
 terraform destroy
+
+# 4. Pipeline : mise à jour des secrets puis déploiement manuel
+.\scripts\set-github-secrets.ps1
+gh workflow run "Terraform CI/CD" -f environment=prod -f action=apply
 ```
 
 ### B. Sorties de l'environnement dev
@@ -389,4 +441,6 @@ Les captures demandées (§26) sont rangées dans `docs/captures/` :
 | Test de panne | `09-panne.png` |
 | Auto Scaling | `10-autoscaling.png` |
 | Sécurité de la base | `11-securite-db.png` |
-| Pipeline (fmt, validate, plan) | à venir |
+| Pipeline : Pull Request et contrôles | `12-pipeline.png` |
+| Pipeline : déploiement complet de prod | `13-pipeline-apply.png` |
+| Pipeline : approbation manuelle | `14-approbation.png` |
